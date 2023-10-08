@@ -63,8 +63,8 @@ class Bard {
         } catch (e) {
             // Failure to get server
             throw new Error(
-                "Could not fetch Google Bard. You may be disconnected from internet: " +
-                e
+                "Could not fetch Google Bard. You may be disconnected from the internet: " +
+                e.message // Show the error message
             );
         }
 
@@ -107,6 +107,10 @@ class Bard {
                 }
             );
 
+            if (!response.ok) {
+                throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+            }
+
             const uploadUrl = response.headers.get("X-Goog-Upload-URL");
             this.verbose && console.log("📤 Sending your image");
             response = await this.#fetch(uploadUrl, {
@@ -120,14 +124,18 @@ class Bard {
                 credentials: "include",
             });
 
+            if (!response.ok) {
+                throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+            }
+
             const imageFileLocation = await response.text();
 
             this.verbose && console.log("✅ Image finished working\n");
             return imageFileLocation;
         } catch (e) {
             throw new Error(
-                "Could not fetch Google Bard. You may be disconnected from internet: " +
-                e
+                "Could not fetch Google Bard. You may be disconnected from the internet: " +
+                e.message // Show the error message
             );
         }
     }
@@ -226,18 +234,19 @@ class Bard {
             headers: this.headers,
             body: formBody,
             credentials: "include",
-        })
-            .then((response) => {
-                return response.text();
-            })
-            .then((text) => {
-                return JSON.parse(text.split("\n")[3])[0][2];
-            })
-            .then((rawData) => JSON.parse(rawData));
+        });
+
+        if (!chatData.ok) {
+            // Manejar errores HTTP aquí
+            throw new Error(`HTTP Error: ${chatData.status} - ${chatData.statusText}`);
+        }
+
+        const responseData = await chatData.text();
+        const responseJson = JSON.parse(responseData.split("\n")[3])[0][2];
 
         this.verbose && console.log("🧩 Parsing output");
         // Get first Bard-recommended answer
-        const answer = chatData[4][0];
+        const answer = responseJson[4][0];
 
         // Text of that answer
         const text = answer[1][0];
@@ -288,7 +297,7 @@ class Bard {
                     break;
                 default:
                     throw new Error(
-                        "Format can obly be Bard.JSON for JSON output or Bard.MD for Markdown output."
+                        "Format can only be Bard.JSON for JSON output or Bard.MD for Markdown output."
                     );
             }
         }
