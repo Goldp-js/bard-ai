@@ -68,18 +68,20 @@ class Bard {
             );
         }
 
-        try {
-            const SNlM0e = responseText.match(/SNlM0e":"(.*?)"/)[1];
-            // Assign SNlM0e and return it
-            this.SNlM0e = SNlM0e;
-            this.verbose && console.log("✅ Initialization finished\n");
-            return SNlM0e;
-        } catch {
-            throw new Error(
-                "Could not use your Cookie. Make sure that you copied correctly the Cookie with name __Secure-1PSID exactly. If you are sure your cookie is correct, you may also have reached your rate limit."
-            );
-        }
+         try {
+    const SNlM0e = responseText.match(/SNlM0e":"(.*?)"/)[1];
+    // Assign SNlM0e and return it
+    this.SNlM0e = SNlM0e;
+    this.verbose && console.log("✅ Initialization finished\n");
+    return SNlM0e;
+} catch (error) {
+    console.error("Error:", error);
+    throw new Error(
+        "Could not use your Cookie. Make sure that you copied correctly the Cookie with name __Secure-1PSID exactly. If you are sure your cookie is correct, you may also have reached your rate limit."
+    );
+}
     }
+    
 
     async #uploadImage(name, buffer) {
         this.verbose && console.log("🖼️ Starting image processing");
